@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Bernard Essien — Digital Card</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js">
+    </script>
+    <style>
+        :root {
+            --bg: #ffffff;
+            --blue: #1d4ed8;
+            --blue-light: #60a5fa;
+            --blue-muted: #bfdbfe;
+            --white: #ffffff;
+            --text: #0f172a;
+            --muted: #475569;
+            --border: #cbd5e1;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100dvh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            /* Crisp dot grid background */
+            background: #ffffff;
+            background-image: radial-gradient(circle, rgba(59, 130, 246, 0.12) 1px, transparent 1px);
+            background-size: 28px 28px;
+            font-family: 'Manrope', sans-serif;
+            color: var(--text);
+            padding: max(24px, env(safe-area-inset-top)) 20px max(24px, env(safe-area-inset-bottom));
+            animation: fadeInBody 0.8s ease-out;
+        }
+
+        @keyframes fadeInBody {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .wrap {
+            width: 100%;
+            max-width: 400px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .stage {
+            width: 100%;
+            aspect-ratio: 5 / 7.2;
+            max-height: 620px;
+            perspective: 1600px;
+            animation: floatStage 6s ease-in-out infinite;
+        }
+
+        @keyframes floatStage {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
+        }
+
+        .stage.flipped {
+            animation: none;
+        }
+
+        .card {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+            transition: transform .7s cubic-bezier(.2, .8, .2, 1);
+            cursor: pointer;
+        }
+
+        .stage.flipped .card {
+            transform: rotateY(180deg) scale(1.02);
+        }
+
+        .face {
+            position: absolute;
+            inset: 0;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 22px;
+            background: linear-gradient(145deg, #ffffff 0%, #f8faff 100%);
+            border: 1.5px solid var(--blue-muted);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05),
+                        0 10px 30px -10px rgba(30, 58, 138, 0.12),
+                        inset 0 1px 0 rgba(255,255,255,0.8);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .face.back {
+            transform: rotateY(180deg);
+        }
+
+        /* Rotating watermarks – slightly more visible */
+        .mark {
+            position: absolute;
+            opacity: 0.18;
+            pointer-events: none;
+        }
+
+        .mark.hero {
+            width: 220px;
+            height: 220px;
+            top: -30px;
+            right: -60px;
+            opacity: 0.2;
+            animation: rotateGlobe 30s linear infinite;
+        }
+
+        .mark.hero.back-mark {
+            top: auto;
+            bottom: -70px;
+            left: -70px;
+            right: auto;
+            animation: rotateGlobe 30s linear infinite reverse;
+        }
+
+        @keyframes rotateGlobe {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .mark svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .front-inner {
+            position: relative;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 30px 26px 26px;
+            z-index: 1;
+        }
+
+        .photo-frame {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin: 0 auto 16px;
+            overflow: hidden;
+            background: var(--blue-muted);
+            border: 3px solid var(--blue);
+            box-shadow: 0 8px 18px rgba(30, 58, 138, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .photo-frame:hover {
+            transform: rotate(3deg) scale(1.05);
+            box-shadow: 0 12px 24px rgba(30, 58, 138, 0.25);
+        }
+
+        .photo-initials {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Bricolage Grotesque', sans-serif;
+            font-weight: 700;
+            font-size: 28px;
+            color: var(--blue);
+            z-index: 0;
+        }
+
+        .photo-img {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+            z-index: 1;
+            background: transparent;
+        }
+
+        .brandmark {
+            width: 34px;
+            height: 34px;
+            flex-shrink: 0;
+        }
+
+        .eyebrow {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--blue);
+            font-size: 11px;
+            letter-spacing: .16em;
+            text-transform: uppercase;
+            font-weight: 700;
+            justify-content: center;
+        }
+
+        .wordmark {
+            font-family: 'Bricolage Grotesque', sans-serif;
+            font-weight: 800;
+            font-size: clamp(24px, 7vw, 34px);
+            line-height: 1.05;
+            letter-spacing: -0.01em;
+            margin: 12px 0 6px;
+            text-align: center;
+            color: var(--text);
+        }
+
+        .role {
+            font-size: 14px;
+            color: #334155;
+            font-weight: 600;
+            letter-spacing: .02em;
+            text-align: center;
+        }
+
+        /* Animated gradient divider */
+        .divider {
+            width: 36px;
+            height: 3px;
+            border-radius: 2px;
+            background: linear-gradient(90deg, var(--blue), var(--blue-light), var(--blue));
+            background-size: 200% 100%;
+            animation: shiftGradient 3s ease infinite;
+            margin: 16px auto;
+        }
+
+        @keyframes shiftGradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .contact-line {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text);
+            letter-spacing: .01em;
+            text-align: center;
+        }
+
+        .contact-line span {
+            color: #475569;
+            font-weight: 500;
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 20px;
+            justify-content: center;
+        }
+
+        .btn {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 12px 6px;
+            border-radius: 12px;
+            font-family: 'Manrope', sans-serif;
+            font-size: 12px;
+            font-weight: 700;
+            text-decoration: none;
+            border: 1px solid transparent;
+            cursor: pointer;
+            transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .btn:active {
+            transform: scale(0.96);
+        }
+
+        .btn.primary {
+            background: var(--blue);
+            color: var(--white);
+            border: 1px solid var(--blue);
+            box-shadow: 0 2px 6px rgba(29, 78, 216, 0.2);
+        }
+
+        .btn.primary:hover {
+            background: #1e40af;
+            box-shadow: 0 4px 12px rgba(30, 64, 175, 0.3);
+        }
+
+        .btn.ghost {
+            background: transparent;
+            border-color: var(--blue);
+            color: var(--blue);
+        }
+
+        .btn.ghost:hover {
+            background: rgba(29, 78, 216, 0.04);
+            border-color: #1e40af;
+            color: #1e40af;
+        }
+
+        .btn svg {
+            width: 15px;
+            height: 15px;
+            flex-shrink: 0;
+        }
+
+        /* Pulsing flip hint */
+        .flip-hint {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            font-size: 11.5px;
+            color: #475569;
+            font-weight: 600;
+            padding: 14px 0 2px;
+            letter-spacing: .03em;
+            animation: pulseHint 2s infinite;
+        }
+
+        .flip-hint svg {
+            width: 13px;
+            height: 13px;
+            opacity: .9;
+            stroke: var(--blue);
+        }
+
+        @keyframes pulseHint {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+
+        .back-inner {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px 24px;
+            text-align: center;
+            gap: 16px;
+        }
+
+        .qr-frame {
+            background: #ffffff;
+            padding: 14px;
+            border-radius: 16px;
+            border: 1.5px solid var(--blue-muted);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.04);
+            transition: transform 0.3s ease;
+        }
+
+        .qr-frame:hover {
+            transform: scale(1.02);
+        }
+
+        #qrcode {
+            line-height: 0;
+        }
+
+        #qrcode img,
+        #qrcode canvas {
+            display: block;
+            border-radius: 4px;
+            width: 170px !important;
+            height: 170px !important;
+        }
+
+        .scan-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .scan-sub {
+            font-size: 12px;
+            color: #475569;
+            max-width: 230px;
+        }
+
+        .back-actions {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+            margin-top: 6px;
+        }
+
+        .footer-note {
+            font-size: 11px;
+            color: #64748b;
+            text-align: center;
+            opacity: .85;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="wrap">
+        <div class="stage" id="stage">
+            <div class="card" id="card">
+
+                <!-- FRONT -->
+                <div class="face front">
+                    <div class="mark hero">
+                        <svg viewBox="0 0 200 200" fill="none">
+                            <circle cx="100" cy="100" r="92" stroke="#60a5fa" stroke-width="1.5" />
+                            <ellipse cx="100" cy="100" rx="92" ry="34" stroke="#60a5fa" stroke-width="1.5" />
+                            <ellipse cx="100" cy="100" rx="92" ry="34" stroke="#60a5fa" stroke-width="1.5" transform="rotate(60 100 100)" />
+                            <ellipse cx="100" cy="100" rx="92" ry="34" stroke="#60a5fa" stroke-width="1.5" transform="rotate(120 100 100)" />
+                            <path d="M96 30 C112 34 118 48 116 60 C124 66 132 78 128 92 C136 100 134 116 124 124 C126 136 118 150 106 158 C104 168 96 176 90 180 C86 168 88 156 84 146 C74 142 68 130 70 118 C62 112 58 100 64 90 C60 80 64 66 74 60 C72 50 80 38 96 30 Z" fill="#1d4ed8" fill-opacity="0.2" />
+                        </svg>
+                    </div>
+
+                    <div class="front-inner">
+                        <div class="photo-frame">
+                            <span class="photo-initials">BE</span>
+                            <!-- Replace with your actual photo URL -->
+                            <img class="photo-img" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Bernard Essien" />
+                        </div>
+
+                        <div>
+                            <div class="eyebrow">
+                                <svg class="brandmark" viewBox="0 0 200 200" fill="none">
+                                    <circle cx="100" cy="100" r="90" stroke="#1d4ed8" stroke-width="4" />
+                                    <path d="M96 30 C112 34 118 48 116 60 C124 66 132 78 128 92 C136 100 134 116 124 124 C126 136 118 150 106 158 C104 168 96 176 90 180 C86 168 88 156 84 146 C74 142 68 130 70 118 C62 112 58 100 64 90 C60 80 64 66 74 60 C72 50 80 38 96 30 Z" fill="#1d4ed8" />
+                                </svg>
+                                Complementary Card
+                            </div>
+                            <div class="wordmark">Bernard Essien</div>
+                            <div class="role">Network Engineer / IT Support Specialist</div>
+                            <div class="divider"></div>
+                            <div class="contact-line"><span>Call · </span>0249 390 949</div>
+                            <div class="contact-line" style="margin-top:6px;"><span>Email · </span>essienbernard8@gmail.com</div>
+                        </div>
+
+                        <div>
+                            <div class="actions">
+                                <a class="btn primary" href="tel:+233249390949">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" />
+                                    </svg>
+                                    Call
+                                </a>
+                                <a class="btn ghost" href="https://wa.me/233249390949?text=Hello%20Bernard" target="_blank" rel="noopener">
+                                    <svg viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.87.5 3.62 1.44 5.16L2 22l5.09-1.53a9.83 9.83 0 0 0 4.95 1.33h.01c5.46 0 9.9-4.45 9.9-9.9C21.96 6.45 17.5 2 12.04 2zm0 17.9a8 8 0 0 1-4.08-1.11l-.29-.17-3.02.91.91-2.94-.19-.3a7.95 7.95 0 0 1-1.24-4.28c0-4.4 3.58-7.98 8-7.98 4.4 0 7.98 3.58 7.98 7.98-.01 4.4-3.59 7.89-8.07 7.89zm4.38-5.98c-.24-.12-1.42-.7-1.64-.78-.22-.08-.38-.12-.54.12-.16.24-.62.78-.76.94-.14.16-.28.18-.52.06-.24-.12-1.01-.37-1.92-1.18-.71-.63-1.19-1.42-1.33-1.66-.14-.24-.01-.37.11-.49.11-.11.24-.28.36-.42.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.54-1.3-.74-1.78-.19-.46-.39-.4-.54-.4-.14 0-.3-.02-.46-.02-.16 0-.42.06-.64.3-.22.24-.84.82-.84 2s.86 2.32.98 2.48c.12.16 1.7 2.6 4.12 3.64.58.25 1.03.4 1.38.51.58.18 1.11.16 1.53.1.47-.07 1.42-.58 1.62-1.14.2-.56.2-1.04.14-1.14-.06-.1-.22-.16-.46-.28z" />
+                                    </svg>
+                                    WhatsApp
+                                </a>
+                                <a class="btn ghost" href="mailto:essienbernard8@gmail.com">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                                        <polyline points="22,6 12,13 2,6" />
+                                    </svg>
+                                    Email
+                                </a>
+                            </div>
+                            <div class="flip-hint">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M23 4v6h-6" />
+                                    <path d="M1 20v-6h6" />
+                                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+                                </svg>
+                                Tap card to reveal QR
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BACK -->
+                <div class="face back">
+                    <div class="mark hero back-mark">
+                        <svg viewBox="0 0 200 200" fill="none">
+                            <circle cx="100" cy="100" r="92" stroke="#1d4ed8" stroke-width="1.5" />
+                            <ellipse cx="100" cy="100" rx="92" ry="34" stroke="#1d4ed8" stroke-width="1.5" />
+                            <ellipse cx="100" cy="100" rx="92" ry="34" stroke="#1d4ed8" stroke-width="1.5" transform="rotate(60 100 100)" />
+                        </svg>
+                    </div>
+                    <div class="back-inner">
+                        <div class="qr-frame"><div id="qrcode"></div></div>
+                        <div>
+                            <div class="scan-label">Scan to save Bernard Essien</div>
+                            <div class="scan-sub">Point any phone camera at the code — no app needed, works on iPhone & Android.</div>
+                        </div>
+                        <div class="back-actions">
+                            <button class="btn primary" id="saveBtn" type="button">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                    <path d="M7 10l5 5 5-5" />
+                                    <path d="M12 15V3" />
+                                </svg>
+                                Save Contact
+                            </button>
+                            <button class="btn ghost" id="shareBtn" type="button">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="18" cy="5" r="3" />
+                                    <circle cx="6" cy="12" r="3" />
+                                    <circle cx="18" cy="19" r="3" />
+                                    <path d="M8.6 13.5l6.8 3.9M15.4 6.6L8.6 10.5" />
+                                </svg>
+                                Share
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <div class="footer-note">Bernard Essien · Personal Card</div>
+    </div>
+
+    <script>
+        const VCARD = `BEGIN:VCARD
+VERSION:3.0
+N:Essien;Bernard;;;
+FN:Bernard Essien
+ORG:Personal
+TITLE:Network Engineer / IT Support Specialist
+TEL;TYPE=CELL,VOICE:+233249390949
+EMAIL:essienbernard8@gmail.com
+END:VCARD`;
+
+        // Flip
+        const stage = document.getElementById('stage');
+        const card = document.getElementById('card');
+
+        function toggleFlip() {
+            stage.classList.toggle('flipped');
+            if (stage.classList.contains('flipped')) {
+                stage.style.animation = 'none';
+            } else {
+                stage.style.animation = 'floatStage 6s ease-in-out infinite';
+            }
+        }
+
+        card.addEventListener('click', toggleFlip);
+
+        // QR code
+        new QRCode(document.getElementById('qrcode'), {
+            text: VCARD,
+            width: 170,
+            height: 170,
+            colorDark: "#1d4ed8",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.M
+        });
+
+        // Save to Contacts
+        document.getElementById('saveBtn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            const blob = new Blob([VCARD], { type: 'text/vcard' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'Bernard_Essien.vcf';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
+
+        // Share
+        document.getElementById('shareBtn').addEventListener('click', async (e) => {
+            e.stopPropagation();
+            const file = new File([VCARD], 'Bernard_Essien.vcf', { type: 'text/vcard' });
+            try {
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    await navigator.share({
+                        files: [file],
+                        title: 'Bernard Essien',
+                        text: 'Bernard Essien — Network Engineer / IT Support Specialist'
+                    });
+                    return;
+                }
+                if (navigator.share) {
+                    await navigator.share({
+                        title: 'Bernard Essien',
+                        text: 'Bernard Essien — Network Engineer · +233 24 939 0949'
+                    });
+                    return;
+                }
+            } catch (err) { /* fallback */ }
+            document.getElementById('saveBtn').click();
+        });
+    </script>
+</body>
+</html>
