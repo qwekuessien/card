@@ -10,15 +10,51 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js">
     </script>
     <style>
+        /* Light mode (default) */
         :root {
             --bg: #ffffff;
+            --card-bg: #ffffff;
+            --card-border: #bfdbfe;
+            --card-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 10px 30px -10px rgba(30,58,138,0.12), inset 0 1px 0 rgba(255,255,255,0.8);
             --blue: #1d4ed8;
             --blue-light: #60a5fa;
             --blue-muted: #bfdbfe;
-            --white: #ffffff;
             --text: #0f172a;
             --muted: #475569;
-            --border: #cbd5e1;
+            --muted-2: #334155;
+            --footer: #64748b;
+            --dot-color: rgba(59,130,246,0.12);
+            --qr-bg: #ffffff;
+            --qr-border: #bfdbfe;
+            --btn-primary-bg: #1d4ed8;
+            --btn-primary-text: #ffffff;
+            --btn-ghost-border: #1d4ed8;
+            --btn-ghost-text: #1d4ed8;
+            --divider-base: #1d4ed8;
+            --divider-light: #60a5fa;
+        }
+
+        body.dark-mode {
+            --bg: #0b1120;
+            --card-bg: #111827;
+            --card-border: #1e293b;
+            --card-shadow: 0 4px 6px -1px rgba(0,0,0,0.4), 0 10px 30px -10px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.03);
+            --blue: #3b82f6;
+            --blue-light: #93c5fd;
+            --blue-muted: #1e3a8a;
+            --text: #f1f5f9;
+            --muted: #94a3b8;
+            --muted-2: #cbd5e1;
+            --footer: #64748b;
+            --dot-color: rgba(59,130,246,0.2);
+            --qr-bg: #1e293b;
+            --qr-border: #334155;
+            --btn-primary-bg: #3b82f6;
+            --btn-primary-text: #ffffff;
+            --btn-ghost-border: #3b82f6;
+            --btn-ghost-text: #3b82f6;
+            --divider-base: #3b82f6;
+            --divider-light: #93c5fd;
         }
 
         * {
@@ -26,8 +62,7 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        html,
-        body {
+        html, body {
             height: 100%;
             margin: 0;
         }
@@ -36,14 +71,15 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: #ffffff;
-            background-image: radial-gradient(circle, rgba(59, 130, 246, 0.12) 1px, transparent 1px);
+            background: var(--bg);
+            background-image: radial-gradient(circle, var(--dot-color) 1px, transparent 1px);
             background-size: 28px 28px;
             font-family: 'Manrope', sans-serif;
             color: var(--text);
             padding: 16px;
             min-height: 100dvh;
             animation: fadeInBody 0.8s ease-out;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         @keyframes fadeInBody {
@@ -58,14 +94,43 @@
             flex-direction: column;
             align-items: center;
             gap: 12px;
+            position: relative;
+        }
+
+        /* Theme toggle button */
+        .theme-toggle {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 1.5px solid var(--blue);
+            background: var(--card-bg);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--blue);
+            z-index: 10;
+            transition: background 0.3s, color 0.3s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .theme-toggle svg {
+            width: 18px;
+            height: 18px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
         }
 
         .stage {
             width: 100%;
             aspect-ratio: 5 / 7.2;
             max-height: calc(100vh - 56px);
-            -webkit-perspective: 1200px;   /* Safari / iOS */
-            perspective: 1200px;
             animation: floatStage 6s ease-in-out infinite;
         }
 
@@ -74,50 +139,28 @@
             50% { transform: translateY(-4px); }
         }
 
-        .stage.flipped {
-            animation: none;
-        }
-
         .card {
-            position: relative;
             width: 100%;
             height: 100%;
-            -webkit-transform-style: preserve-3d;   /* Safari / iOS */
-            transform-style: preserve-3d;
-            transition: transform .7s cubic-bezier(.2, .8, .2, 1);
-            cursor: pointer;
-        }
-
-        .stage.flipped .card {
-            -webkit-transform: rotateY(180deg) scale(1.02);  /* Safari / iOS */
-            transform: rotateY(180deg) scale(1.02);
-        }
-
-        .face {
-            position: absolute;
-            inset: 0;
-            -webkit-backface-visibility: hidden;   /* Safari / iOS */
-            backface-visibility: hidden;
             border-radius: 22px;
-            background: linear-gradient(145deg, #ffffff 0%, #f8faff 100%);
-            border: 1.5px solid var(--blue-muted);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05),
-                        0 10px 30px -10px rgba(30, 58, 138, 0.12),
-                        inset 0 1px 0 rgba(255,255,255,0.8);
-            overflow: hidden;
+            background: var(--card-bg);
+            border: 1.5px solid var(--card-border);
+            box-shadow: var(--card-shadow);
             display: flex;
             flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
         }
 
-        .face.back {
-            -webkit-transform: rotateY(180deg);   /* Safari / iOS */
-            transform: rotateY(180deg);
-        }
-
+        /* Watermark */
         .mark {
             position: absolute;
-            opacity: 0.18;
+            opacity: 0.15;
             pointer-events: none;
+        }
+        body.dark-mode .mark {
+            opacity: 0.25;
         }
 
         .mark.hero {
@@ -125,18 +168,8 @@
             height: 220px;
             top: -30px;
             right: -60px;
-            opacity: 0.2;
             -webkit-animation: rotateGlobe 30s linear infinite;
             animation: rotateGlobe 30s linear infinite;
-        }
-
-        .mark.hero.back-mark {
-            top: auto;
-            bottom: -70px;
-            left: -70px;
-            right: auto;
-            -webkit-animation: rotateGlobe 30s linear infinite reverse;
-            animation: rotateGlobe 30s linear infinite reverse;
         }
 
         @-webkit-keyframes rotateGlobe {
@@ -164,22 +197,23 @@
             z-index: 1;
         }
 
+        /* Larger photo frame */
         .photo-frame {
             position: relative;
-            width: clamp(70px, 15vw, 80px);
-            height: clamp(70px, 15vw, 80px);
+            width: clamp(90px, 24vw, 120px);
+            height: clamp(90px, 24vw, 120px);
             border-radius: 50%;
             margin: 0 auto clamp(10px, 2vw, 16px);
             overflow: hidden;
             background: var(--blue-muted);
             border: 3px solid var(--blue);
-            box-shadow: 0 8px 18px rgba(30, 58, 138, 0.2);
+            box-shadow: 0 8px 18px rgba(30, 58, 138, 0.25);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
         .photo-frame:hover {
             transform: rotate(3deg) scale(1.05);
-            box-shadow: 0 12px 24px rgba(30, 58, 138, 0.25);
+            box-shadow: 0 12px 24px rgba(30, 58, 138, 0.3);
         }
 
         .photo-initials {
@@ -189,7 +223,7 @@
             transform: translate(-50%, -50%);
             font-family: 'Bricolage Grotesque', sans-serif;
             font-weight: 700;
-            font-size: clamp(22px, 6vw, 28px);
+            font-size: clamp(26px, 7vw, 34px);
             color: var(--blue);
             z-index: 0;
         }
@@ -236,7 +270,7 @@
 
         .role {
             font-size: clamp(12px, 3vw, 14px);
-            color: #334155;
+            color: var(--muted-2);
             font-weight: 600;
             letter-spacing: .02em;
             text-align: center;
@@ -246,7 +280,7 @@
             width: 36px;
             height: 3px;
             border-radius: 2px;
-            background: linear-gradient(90deg, var(--blue), var(--blue-light), var(--blue));
+            background: linear-gradient(90deg, var(--divider-base), var(--divider-light), var(--divider-base));
             background-size: 200% 100%;
             -webkit-animation: shiftGradient 3s ease infinite;
             animation: shiftGradient 3s ease infinite;
@@ -273,7 +307,7 @@
         }
 
         .contact-line span {
-            color: #475569;
+            color: var(--muted);
             font-weight: 500;
         }
 
@@ -307,27 +341,24 @@
         }
 
         .btn.primary {
-            background: var(--blue);
-            color: var(--white);
-            border: 1px solid var(--blue);
-            box-shadow: 0 2px 6px rgba(29, 78, 216, 0.2);
+            background: var(--btn-primary-bg);
+            color: var(--btn-primary-text);
+            border: 1px solid var(--btn-primary-bg);
+            box-shadow: 0 2px 6px rgba(29, 78, 216, 0.25);
         }
 
         .btn.primary:hover {
-            background: #1e40af;
-            box-shadow: 0 4px 12px rgba(30, 64, 175, 0.3);
+            filter: brightness(1.1);
         }
 
         .btn.ghost {
             background: transparent;
-            border-color: var(--blue);
-            color: var(--blue);
+            border-color: var(--btn-ghost-border);
+            color: var(--btn-ghost-text);
         }
 
         .btn.ghost:hover {
-            background: rgba(29, 78, 216, 0.04);
-            border-color: #1e40af;
-            color: #1e40af;
+            background: rgba(59, 130, 246, 0.05);
         }
 
         .btn svg {
@@ -336,60 +367,69 @@
             flex-shrink: 0;
         }
 
-        .flip-hint {
+        /* Dropdown toggle button */
+        .qr-toggle-btn {
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 6px;
             font-size: clamp(10px, 2.5vw, 11.5px);
-            color: #475569;
+            color: var(--blue);
             font-weight: 600;
-            padding: clamp(10px, 2vw, 14px) 0 2px;
+            padding: 8px 0 2px;
             letter-spacing: .03em;
-            -webkit-animation: pulseHint 2s infinite;
-            animation: pulseHint 2s infinite;
+            background: none;
+            border: none;
+            cursor: pointer;
+            margin: 0 auto;
+            transition: opacity 0.2s;
         }
 
-        .flip-hint svg {
+        .qr-toggle-btn svg {
             width: clamp(12px, 2.5vw, 13px);
             height: clamp(12px, 2.5vw, 13px);
-            opacity: .9;
             stroke: var(--blue);
         }
 
-        @-webkit-keyframes pulseHint {
-            0%, 100% { opacity: 0.8; }
-            50% { opacity: 1; }
-        }
-        @keyframes pulseHint {
-            0%, 100% { opacity: 0.8; }
-            50% { opacity: 1; }
+        .qr-toggle-btn:hover {
+            opacity: 0.8;
         }
 
-        .back-inner {
-            flex: 1;
+        /* Dropdown panel */
+        .qr-dropdown {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 100%;
+            background: var(--card-bg);
+            border-radius: 0 0 22px 22px;
+            border: 1.5px solid var(--card-border);
+            border-top: none;
+            box-shadow: 0 10px 20px -10px rgba(0,0,0,0.1);
+            margin-top: -2px;
+            position: relative;
+            z-index: 5;
+        }
+
+        .qr-dropdown.open {
+            max-height: 400px; /* enough for QR and buttons */
+        }
+
+        .qr-dropdown-inner {
+            padding: clamp(16px, 4vw, 24px);
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            padding: clamp(20px, 5vw, 30px) clamp(16px, 4vw, 24px);
-            text-align: center;
-            gap: clamp(12px, 3vw, 16px);
+            gap: 16px;
         }
 
         .qr-frame {
-            background: #ffffff;
-            padding: clamp(10px, 2.5vw, 14px);
+            background: var(--qr-bg);
+            padding: 14px;
             border-radius: 16px;
-            border: 1.5px solid var(--blue-muted);
-            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.04);
-            transition: transform 0.3s ease;
+            border: 1.5px solid var(--qr-border);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
             width: fit-content;
-            margin: 0 auto;
-        }
-
-        .qr-frame:hover {
-            transform: scale(1.02);
         }
 
         #qrcode {
@@ -412,21 +452,20 @@
 
         .scan-sub {
             font-size: clamp(11px, 2.5vw, 12px);
-            color: #475569;
+            color: var(--muted);
             max-width: 230px;
-            margin: 0 auto;
+            text-align: center;
         }
 
-        .back-actions {
+        .dropdown-actions {
             display: flex;
             gap: clamp(8px, 2vw, 10px);
             width: 100%;
-            margin-top: 6px;
         }
 
         .footer-note {
             font-size: clamp(10px, 2vw, 11px);
-            color: #64748b;
+            color: var(--footer);
             text-align: center;
             opacity: .85;
         }
@@ -445,114 +484,122 @@
 <body>
 
     <div class="wrap">
+        <!-- Dark/Light Mode Toggle -->
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
+            <!-- Sun icon (visible in light mode) -->
+            <svg id="sunIcon" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="5"/>
+                <line x1="12" y1="1" x2="12" y2="3"/>
+                <line x1="12" y1="21" x2="12" y2="23"/>
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                <line x1="1" y1="12" x2="3" y2="12"/>
+                <line x1="21" y1="12" x2="23" y2="12"/>
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+            </svg>
+            <!-- Moon icon (hidden in light mode) -->
+            <svg id="moonIcon" viewBox="0 0 24 24" style="display:none;">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+            </svg>
+        </button>
+
         <div class="stage" id="stage">
-            <div class="card" id="card">
-
-                <!-- FRONT -->
-                <div class="face front">
-                    <div class="mark hero">
-                        <svg viewBox="0 0 200 200" fill="none">
-                            <circle cx="100" cy="100" r="92" stroke="#60a5fa" stroke-width="1.5" />
-                            <ellipse cx="100" cy="100" rx="92" ry="34" stroke="#60a5fa" stroke-width="1.5" />
-                            <ellipse cx="100" cy="100" rx="92" ry="34" stroke="#60a5fa" stroke-width="1.5" transform="rotate(60 100 100)" />
-                            <ellipse cx="100" cy="100" rx="92" ry="34" stroke="#60a5fa" stroke-width="1.5" transform="rotate(120 100 100)" />
-                            <path d="M96 30 C112 34 118 48 116 60 C124 66 132 78 128 92 C136 100 134 116 124 124 C126 136 118 150 106 158 C104 168 96 176 90 180 C86 168 88 156 84 146 C74 142 68 130 70 118 C62 112 58 100 64 90 C60 80 64 66 74 60 C72 50 80 38 96 30 Z" fill="#1d4ed8" fill-opacity="0.2" />
-                        </svg>
-                    </div>
-
-                    <div class="front-inner">
-                        <div class="photo-frame">
-                            <span class="photo-initials">BE</span>
-                            <!-- Replace with your actual photo URL -->
-                            <img class="photo-img" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Bernard Essien" />
-                        </div>
-
-                        <div>
-                            <div class="eyebrow">
-                                <svg class="brandmark" viewBox="0 0 200 200" fill="none">
-                                    <circle cx="100" cy="100" r="90" stroke="#1d4ed8" stroke-width="4" />
-                                    <path d="M96 30 C112 34 118 48 116 60 C124 66 132 78 128 92 C136 100 134 116 124 124 C126 136 118 150 106 158 C104 168 96 176 90 180 C86 168 88 156 84 146 C74 142 68 130 70 118 C62 112 58 100 64 90 C60 80 64 66 74 60 C72 50 80 38 96 30 Z" fill="#1d4ed8" />
-                                </svg>
-                                Complementary Card
-                            </div>
-                            <div class="wordmark">Bernard Essien</div>
-                            <div class="role">Network Engineer / IT Support Specialist</div>
-                            <div class="divider"></div>
-                            <div class="contact-line"><span>Call · </span>0249 390 949</div>
-                            <div class="contact-line" style="margin-top:6px;"><span>Email · </span>essienbernard8@gmail.com</div>
-                        </div>
-
-                        <div>
-                            <div class="actions">
-                                <a class="btn primary" href="tel:+233249390949">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" />
-                                    </svg>
-                                    Call
-                                </a>
-                                <a class="btn ghost" href="https://wa.me/233249390949?text=Hello%20Bernard" target="_blank" rel="noopener">
-                                    <svg viewBox="0 0 24 24" fill="currentColor">
-                                        <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.87.5 3.62 1.44 5.16L2 22l5.09-1.53a9.83 9.83 0 0 0 4.95 1.33h.01c5.46 0 9.9-4.45 9.9-9.9C21.96 6.45 17.5 2 12.04 2zm0 17.9a8 8 0 0 1-4.08-1.11l-.29-.17-3.02.91.91-2.94-.19-.3a7.95 7.95 0 0 1-1.24-4.28c0-4.4 3.58-7.98 8-7.98 4.4 0 7.98 3.58 7.98 7.98-.01 4.4-3.59 7.89-8.07 7.89zm4.38-5.98c-.24-.12-1.42-.7-1.64-.78-.22-.08-.38-.12-.54.12-.16.24-.62.78-.76.94-.14.16-.28.18-.52.06-.24-.12-1.01-.37-1.92-1.18-.71-.63-1.19-1.42-1.33-1.66-.14-.24-.01-.37.11-.49.11-.11.24-.28.36-.42.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.54-1.3-.74-1.78-.19-.46-.39-.4-.54-.4-.14 0-.3-.02-.46-.02-.16 0-.42.06-.64.3-.22.24-.84.82-.84 2s.86 2.32.98 2.48c.12.16 1.7 2.6 4.12 3.64.58.25 1.03.4 1.38.51.58.18 1.11.16 1.53.1.47-.07 1.42-.58 1.62-1.14.2-.56.2-1.04.14-1.14-.06-.1-.22-.16-.46-.28z" />
-                                    </svg>
-                                    WhatsApp
-                                </a>
-                                <a class="btn ghost" href="mailto:essienbernard8@gmail.com">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-                                        <polyline points="22,6 12,13 2,6" />
-                                    </svg>
-                                    Email
-                                </a>
-                            </div>
-                            <div class="flip-hint">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M23 4v6h-6" />
-                                    <path d="M1 20v-6h6" />
-                                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
-                                </svg>
-                                Tap card to reveal QR
-                            </div>
-                        </div>
-                    </div>
+            <div class="card">
+                <div class="mark hero">
+                    <svg viewBox="0 0 200 200" fill="none">
+                        <circle cx="100" cy="100" r="92" stroke="var(--blue-light)" stroke-width="1.5" />
+                        <ellipse cx="100" cy="100" rx="92" ry="34" stroke="var(--blue-light)" stroke-width="1.5" />
+                        <ellipse cx="100" cy="100" rx="92" ry="34" stroke="var(--blue-light)" stroke-width="1.5" transform="rotate(60 100 100)" />
+                        <ellipse cx="100" cy="100" rx="92" ry="34" stroke="var(--blue-light)" stroke-width="1.5" transform="rotate(120 100 100)" />
+                        <path d="M96 30 C112 34 118 48 116 60 C124 66 132 78 128 92 C136 100 134 116 124 124 C126 136 118 150 106 158 C104 168 96 176 90 180 C86 168 88 156 84 146 C74 142 68 130 70 118 C62 112 58 100 64 90 C60 80 64 66 74 60 C72 50 80 38 96 30 Z" fill="var(--blue)" fill-opacity="0.25" />
+                    </svg>
                 </div>
 
-                <!-- BACK -->
-                <div class="face back">
-                    <div class="mark hero back-mark">
-                        <svg viewBox="0 0 200 200" fill="none">
-                            <circle cx="100" cy="100" r="92" stroke="#1d4ed8" stroke-width="1.5" />
-                            <ellipse cx="100" cy="100" rx="92" ry="34" stroke="#1d4ed8" stroke-width="1.5" />
-                            <ellipse cx="100" cy="100" rx="92" ry="34" stroke="#1d4ed8" stroke-width="1.5" transform="rotate(60 100 100)" />
-                        </svg>
+                <div class="front-inner">
+                    <div class="photo-frame">
+                        <span class="photo-initials">BE</span>
+                        <!-- Replace with your actual photo URL -->
+                        <img class="photo-img" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Bernard Essien" />
                     </div>
-                    <div class="back-inner">
-                        <div class="qr-frame"><div id="qrcode"></div></div>
-                        <div>
-                            <div class="scan-label">Scan to save Bernard Essien</div>
-                            <div class="scan-sub">Point any phone camera at the code — no app needed, works on iPhone & Android.</div>
+
+                    <div>
+                        <div class="eyebrow">
+                            <svg class="brandmark" viewBox="0 0 200 200" fill="none">
+                                <circle cx="100" cy="100" r="90" stroke="var(--blue)" stroke-width="4" />
+                                <path d="M96 30 C112 34 118 48 116 60 C124 66 132 78 128 92 C136 100 134 116 124 124 C126 136 118 150 106 158 C104 168 96 176 90 180 C86 168 88 156 84 146 C74 142 68 130 70 118 C62 112 58 100 64 90 C60 80 64 66 74 60 C72 50 80 38 96 30 Z" fill="var(--blue)" />
+                            </svg>
+                            Complementary Card
                         </div>
-                        <div class="back-actions">
-                            <button class="btn primary" id="saveBtn" type="button">
+                        <div class="wordmark">Bernard Essien</div>
+                        <div class="role">Network Engineer / IT Support Specialist</div>
+                        <div class="divider"></div>
+                        <div class="contact-line"><span>Call · </span>0249 390 949</div>
+                        <div class="contact-line" style="margin-top:6px;"><span>Email · </span>essienbernard8@gmail.com</div>
+                    </div>
+
+                    <div>
+                        <div class="actions">
+                            <a class="btn primary" href="tel:+233249390949">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                                    <path d="M7 10l5 5 5-5" />
-                                    <path d="M12 15V3" />
+                                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" />
                                 </svg>
-                                Save
-                            </button>
-                            <button class="btn ghost" id="shareBtn" type="button">
+                                Call
+                            </a>
+                            <a class="btn ghost" href="https://wa.me/233249390949?text=Hello%20Bernard" target="_blank" rel="noopener">
+                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.87.5 3.62 1.44 5.16L2 22l5.09-1.53a9.83 9.83 0 0 0 4.95 1.33h.01c5.46 0 9.9-4.45 9.9-9.9C21.96 6.45 17.5 2 12.04 2zm0 17.9a8 8 0 0 1-4.08-1.11l-.29-.17-3.02.91.91-2.94-.19-.3a7.95 7.95 0 0 1-1.24-4.28c0-4.4 3.58-7.98 8-7.98 4.4 0 7.98 3.58 7.98 7.98-.01 4.4-3.59 7.89-8.07 7.89zm4.38-5.98c-.24-.12-1.42-.7-1.64-.78-.22-.08-.38-.12-.54.12-.16.24-.62.78-.76.94-.14.16-.28.18-.52.06-.24-.12-1.01-.37-1.92-1.18-.71-.63-1.19-1.42-1.33-1.66-.14-.24-.01-.37.11-.49.11-.11.24-.28.36-.42.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.54-1.3-.74-1.78-.19-.46-.39-.4-.54-.4-.14 0-.3-.02-.46-.02-.16 0-.42.06-.64.3-.22.24-.84.82-.84 2s.86 2.32.98 2.48c.12.16 1.7 2.6 4.12 3.64.58.25 1.03.4 1.38.51.58.18 1.11.16 1.53.1.47-.07 1.42-.58 1.62-1.14.2-.56.2-1.04.14-1.14-.06-.1-.22-.16-.46-.28z" />
+                                </svg>
+                                WhatsApp
+                            </a>
+                            <a class="btn ghost" href="mailto:essienbernard8@gmail.com">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <circle cx="18" cy="5" r="3" />
-                                    <circle cx="6" cy="12" r="3" />
-                                    <circle cx="18" cy="19" r="3" />
-                                    <path d="M8.6 13.5l6.8 3.9M15.4 6.6L8.6 10.5" />
+                                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                                    <polyline points="22,6 12,13 2,6" />
                                 </svg>
-                                Share
-                            </button>
+                                Email
+                            </a>
                         </div>
+                        <!-- QR toggle button replaces flip hint -->
+                        <button class="qr-toggle-btn" id="qrToggleBtn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M23 4v6h-6" />
+                                <path d="M1 20v-6h6" />
+                                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+                            </svg>
+                            <span>Show QR Code</span>
+                        </button>
                     </div>
                 </div>
-
+            </div>
+            <!-- Dropdown panel attached to the card -->
+            <div class="qr-dropdown" id="qrDropdown">
+                <div class="qr-dropdown-inner">
+                    <div class="qr-frame"><div id="qrcode"></div></div>
+                    <div>
+                        <div class="scan-label">Scan to save Bernard Essien</div>
+                        <div class="scan-sub">Point any phone camera at the code — no app needed, works on iPhone & Android.</div>
+                    </div>
+                    <div class="dropdown-actions">
+                        <button class="btn primary" id="saveBtn" type="button">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                <path d="M7 10l5 5 5-5" />
+                                <path d="M12 15V3" />
+                            </svg>
+                            Save
+                        </button>
+                        <button class="btn ghost" id="shareBtn" type="button">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="18" cy="5" r="3" />
+                                <circle cx="6" cy="12" r="3" />
+                                <circle cx="18" cy="19" r="3" />
+                                <path d="M8.6 13.5l6.8 3.9M15.4 6.6L8.6 10.5" />
+                            </svg>
+                            Share
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
         <div class="footer-note">Bernard Essien · Personal Card</div>
@@ -569,29 +616,30 @@ TEL;TYPE=CELL,VOICE:+233249390949
 EMAIL:essienbernard8@gmail.com
 END:VCARD`;
 
-        // Flip
-        const stage = document.getElementById('stage');
-        const card = document.getElementById('card');
+        // Dropdown toggle logic
+        const dropdown = document.getElementById('qrDropdown');
+        const toggleBtn = document.getElementById('qrToggleBtn');
+        const toggleText = toggleBtn.querySelector('span');
 
-        function toggleFlip() {
-            stage.classList.toggle('flipped');
-            if (stage.classList.contains('flipped')) {
-                stage.style.animation = 'none';
+        toggleBtn.addEventListener('click', () => {
+            dropdown.classList.toggle('open');
+            if (dropdown.classList.contains('open')) {
+                toggleText.textContent = 'Hide QR Code';
+                // Generate QR code only once
+                if (!dropdown.dataset.generated) {
+                    new QRCode(document.getElementById('qrcode'), {
+                        text: VCARD,
+                        width: 170,
+                        height: 170,
+                        colorDark: "#1d4ed8",
+                        colorLight: "#ffffff",
+                        correctLevel: QRCode.CorrectLevel.M
+                    });
+                    dropdown.dataset.generated = 'true';
+                }
             } else {
-                stage.style.animation = 'floatStage 6s ease-in-out infinite';
+                toggleText.textContent = 'Show QR Code';
             }
-        }
-
-        card.addEventListener('click', toggleFlip);
-
-        // QR code
-        new QRCode(document.getElementById('qrcode'), {
-            text: VCARD,
-            width: 170,
-            height: 170,
-            colorDark: "#1d4ed8",
-            colorLight: "#ffffff",
-            correctLevel: QRCode.CorrectLevel.M
         });
 
         // Save to Contacts
@@ -630,6 +678,31 @@ END:VCARD`;
                 }
             } catch (err) { /* fallback */ }
             document.getElementById('saveBtn').click();
+        });
+
+        // Dark/Light mode toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const sunIcon = document.getElementById('sunIcon');
+        const moonIcon = document.getElementById('moonIcon');
+
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark-mode');
+            sunIcon.style.display = 'none';
+            moonIcon.style.display = 'block';
+        }
+
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            if (document.body.classList.contains('dark-mode')) {
+                sunIcon.style.display = 'none';
+                moonIcon.style.display = 'block';
+                localStorage.setItem('theme', 'dark');
+            } else {
+                sunIcon.style.display = 'block';
+                moonIcon.style.display = 'none';
+                localStorage.setItem('theme', 'light');
+            }
         });
     </script>
 </body>
